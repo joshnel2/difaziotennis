@@ -27,7 +27,8 @@
         }
         
         .hero-bg {
-            background: linear-gradient(135deg, var(--hunter-green) 0%, var(--navy) 100%);
+            background: linear-gradient(135deg, rgba(45, 80, 22, 0.85) 0%, rgba(30, 58, 95, 0.85) 100%),
+                        url('https://images.unsplash.com/photo-1554068865-24cecd4e34b8?q=80&w=2070&auto=format&fit=crop') center/cover;
         }
         
         .btn-primary {
@@ -88,7 +89,7 @@
             background: white;
             padding: 2.5rem;
             border-radius: 1.5rem;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
@@ -111,7 +112,7 @@
             transition: all 0.2s ease;
         }
         
-        .time-slot:hover {
+        .time-slot:hover:not(.disabled):not(.booked) {
             border-color: var(--hunter-green);
             background-color: #f0f9ff;
         }
@@ -128,39 +129,140 @@
             background-color: #f3f4f6;
         }
         
-        .time-slot.disabled:hover {
-            border-color: #e5e7eb;
-            background-color: #f3f4f6;
+        .time-slot.booked {
+            background-color: #fee2e2;
+            border-color: #fca5a5;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-bar.hidden {
+            transform: translateY(-100%);
+        }
+        
+        .nav-link {
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--hunter-green);
+        }
+        
+        .court-slot {
+            transition: all 0.2s ease;
+        }
+        
+        .court-slot:hover:not(.booked) {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(45, 80, 22, 0.2);
+        }
+        
+        .court-slot.available {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid #10b981;
+        }
+        
+        .court-slot.booked {
+            background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+            border: 2px solid #ef4444;
+        }
+        
+        .calendar-day {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-day:hover {
+            background-color: #f0fdf4;
+            transform: scale(1.05);
+        }
+        
+        .calendar-day.selected {
+            background-color: var(--hunter-green);
+            color: white;
+        }
+        
+        .calendar-day.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body class="antialiased">
     
-    <!-- Hero Section -->
-    <section class="hero-bg text-white min-h-screen flex items-center justify-center relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute top-0 left-0 w-96 h-96 bg-white rounded-full filter blur-3xl"></div>
-            <div class="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full filter blur-3xl"></div>
+    <!-- Navigation Bar -->
+    <nav class="nav-bar py-4">
+        <div class="container mx-auto px-6">
+            <div class="flex items-center justify-between">
+                <div class="text-2xl font-bold" style="color: var(--hunter-green);">
+                    Rhinebeck TC
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="nav-link font-semibold text-gray-700">Home</a>
+                    <a href="#about" class="nav-link font-semibold text-gray-700">About</a>
+                    <a href="#coaching" class="nav-link font-semibold text-gray-700">Coaching</a>
+                    <a href="#courts" class="nav-link font-semibold text-gray-700">Courts</a>
+                    <a href="#booking" class="nav-link font-semibold text-gray-700">Book Lesson</a>
+                    <a href="#contact" class="nav-link font-semibold text-gray-700">Contact</a>
+                </div>
+                <button onclick="toggleMobileMenu()" class="md:hidden">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden mt-4 space-y-3">
+                <a href="#home" class="block nav-link font-semibold text-gray-700">Home</a>
+                <a href="#about" class="block nav-link font-semibold text-gray-700">About</a>
+                <a href="#coaching" class="block nav-link font-semibold text-gray-700">Coaching</a>
+                <a href="#courts" class="block nav-link font-semibold text-gray-700">Courts</a>
+                <a href="#booking" class="block nav-link font-semibold text-gray-700">Book Lesson</a>
+                <a href="#contact" class="block nav-link font-semibold text-gray-700">Contact</a>
+            </div>
         </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-bg text-white min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-10"></div>
         
-        <div class="container mx-auto px-6 text-center relative z-10">
-            <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+        <div class="container mx-auto px-6 text-center relative z-10 mt-16">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight drop-shadow-lg">
                 Rhinebeck Tennis Club
             </h1>
-            <p class="text-2xl md:text-3xl mb-4 opacity-90 font-light">
+            <p class="text-2xl md:text-3xl mb-4 opacity-90 font-light drop-shadow">
                 Private Coaching with Derek Difazio
             </p>
-            <p class="text-lg md:text-xl mb-12 opacity-80 max-w-2xl mx-auto">
+            <p class="text-lg md:text-xl mb-12 opacity-80 max-w-2xl mx-auto drop-shadow">
                 Elevate your game with personalized instruction on our pristine courts
             </p>
-            <button onclick="scrollToBooking()" class="btn-primary text-white px-12 py-5 rounded-full text-xl font-semibold shadow-2xl">
-                Book Your Private Lesson
-            </button>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="scrollToBooking()" class="btn-primary text-white px-12 py-5 rounded-full text-xl font-semibold shadow-2xl">
+                    Book Your Private Lesson
+                </button>
+                <button onclick="scrollToCourts()" class="bg-white text-gray-800 px-12 py-5 rounded-full text-xl font-semibold shadow-2xl hover:bg-gray-100 transition-all">
+                    Reserve a Court
+                </button>
+            </div>
         </div>
     </section>
 
     <!-- About Section -->
-    <section class="section-padding bg-white">
+    <section id="about" class="section-padding bg-white">
         <div class="container mx-auto max-w-4xl">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-8 text-gray-800">
                 Welcome to Excellence
@@ -169,13 +271,13 @@
                 Nestled in the heart of the Hudson Valley, Rhinebeck Tennis Club has been a sanctuary for tennis enthusiasts since 1985. Our meticulously maintained courts and world-class facilities provide the perfect environment for players of all levels to refine their skills.
             </p>
             <p class="text-lg text-gray-700 text-center leading-relaxed">
-                With a rich tradition of excellence and a commitment to personalized coaching, we offer an unparalleled tennis experience in an atmosphere of refined elegance and warm hospitality.
+                With 5 pristine courts, a rich tradition of excellence, and a commitment to personalized coaching, we offer an unparalleled tennis experience in an atmosphere of refined elegance and warm hospitality.
             </p>
         </div>
     </section>
 
     <!-- Coaching Section -->
-    <section class="section-padding" style="background-color: var(--cream);">
+    <section id="coaching" class="section-padding" style="background-color: var(--cream);">
         <div class="container mx-auto max-w-6xl">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div>
@@ -203,10 +305,10 @@
                     </div>
                 </div>
                 <div class="card p-8">
-                    <div class="aspect-square bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center">
-                        <svg class="w-32 h-32 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
+                    <div class="aspect-square bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?q=80&w=1000&auto=format&fit=crop" 
+                             alt="Tennis Coach" 
+                             class="w-full h-full object-cover">
                     </div>
                     <p class="text-center text-gray-500 mt-4 text-sm">Professional Tennis Coach</p>
                 </div>
@@ -214,14 +316,72 @@
         </div>
     </section>
 
+    <!-- Courts Section -->
+    <section id="courts" class="section-padding bg-white">
+        <div class="container mx-auto max-w-7xl">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800">
+                Court Reservations
+            </h2>
+            <p class="text-center text-gray-600 mb-12 text-lg">
+                Reserve one of our 5 pristine courts ? Evening sessions: 6 PM - 9 PM
+            </p>
+            
+            <div class="card p-8 md:p-12">
+                <!-- Calendar -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold mb-6 text-gray-800">Select Date</h3>
+                    <div id="courtCalendar" class="grid grid-cols-7 gap-3">
+                        <!-- Calendar will be generated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Court Availability Grid -->
+                <div id="courtAvailability" class="hidden">
+                    <h3 class="text-2xl font-bold mb-6 text-gray-800">
+                        Available Courts for <span id="selectedDateDisplay">-</span>
+                    </h3>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="p-4 text-left font-bold text-gray-800">Time</th>
+                                    <th class="p-4 text-center font-bold text-gray-800">Court 1</th>
+                                    <th class="p-4 text-center font-bold text-gray-800">Court 2</th>
+                                    <th class="p-4 text-center font-bold text-gray-800">Court 3</th>
+                                    <th class="p-4 text-center font-bold text-gray-800">Court 4</th>
+                                    <th class="p-4 text-center font-bold text-gray-800">Court 5</th>
+                                </tr>
+                            </thead>
+                            <tbody id="courtSlotsTable">
+                                <!-- Slots will be generated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-6 flex items-center gap-6 justify-center flex-wrap">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 rounded court-slot available"></div>
+                            <span class="text-sm text-gray-600">Available</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 rounded court-slot booked"></div>
+                            <span class="text-sm text-gray-600">Booked</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Booking Section -->
-    <section id="booking" class="section-padding bg-white">
+    <section id="booking" class="section-padding" style="background-color: var(--cream);">
         <div class="container mx-auto max-w-4xl">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800">
                 Book Your Private Lesson
             </h2>
             <p class="text-center text-gray-600 mb-12 text-lg">
-                Select your preferred date and time to begin
+                Select your preferred date and time ? Court reservation required
             </p>
             
             <div class="card p-8 md:p-12">
@@ -240,6 +400,20 @@
                                 <!-- Time slots will be generated by JavaScript -->
                             </div>
                             <p class="text-sm text-gray-500 mt-3">* Time slots within 24 hours are unavailable due to our cancellation policy</p>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <label class="block text-gray-800 font-semibold mb-3 text-lg">Select Court</label>
+                            <select id="lessonCourt" required 
+                                    class="w-full px-6 py-4 border-2 border-gray-300 focus:border-green-600 focus:outline-none text-lg">
+                                <option value="">Choose a court...</option>
+                                <option value="1">Court 1</option>
+                                <option value="2">Court 2</option>
+                                <option value="3">Court 3</option>
+                                <option value="4">Court 4</option>
+                                <option value="5">Court 5</option>
+                            </select>
+                            <p class="text-sm text-gray-500 mt-3">* Court will be reserved for your lesson time</p>
                         </div>
                         
                         <div class="mb-8">
@@ -262,7 +436,7 @@
                         </button>
                     </div>
                     
-                    <!-- Step 2: Payment (Hidden initially) -->
+                    <!-- Step 2: Payment -->
                     <div id="step2" class="booking-step hidden">
                         <div class="mb-8">
                             <h3 class="text-2xl font-bold mb-4 text-gray-800">Lesson Summary</h3>
@@ -274,6 +448,10 @@
                                 <div class="flex justify-between mb-3">
                                     <span class="text-gray-700">Time:</span>
                                     <span class="font-semibold" id="summaryTime">-</span>
+                                </div>
+                                <div class="flex justify-between mb-3">
+                                    <span class="text-gray-700">Court:</span>
+                                    <span class="font-semibold" id="summaryCourt">-</span>
                                 </div>
                                 <div class="flex justify-between mb-3">
                                     <span class="text-gray-700">Name:</span>
@@ -310,7 +488,7 @@
                         </button>
                     </div>
                     
-                    <!-- Step 3: Phone Collection (Hidden initially) -->
+                    <!-- Step 3: Phone Collection -->
                     <div id="step3" class="booking-step hidden">
                         <div class="text-center mb-8">
                             <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
@@ -341,7 +519,7 @@
     </section>
 
     <!-- Contact Section -->
-    <section class="section-padding" style="background-color: var(--cream);">
+    <section id="contact" class="section-padding bg-white">
         <div class="container mx-auto max-w-4xl text-center">
             <h2 class="text-4xl md:text-5xl font-bold mb-8 text-gray-800">
                 Get in Touch
@@ -367,7 +545,7 @@
                 Rhinebeck Tennis Club
             </h3>
             <p class="text-gray-400 mb-4">
-                Excellence in Tennis Since 1985
+                Excellence in Tennis Since 1985 ? 5 Premium Courts
             </p>
             <p class="text-gray-500 text-sm">
                 &copy; 2025 Rhinebeck Tennis Club. All rights reserved.
@@ -398,6 +576,10 @@
                     <div class="flex justify-between">
                         <span class="text-gray-600">Time:</span>
                         <span class="font-semibold" id="confirmTime">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Court:</span>
+                        <span class="font-semibold" id="confirmCourt">-</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Student:</span>
@@ -431,36 +613,127 @@
         </div>
     </div>
 
+    <!-- Court Booking Modal -->
+    <div id="courtBookingModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Reserve Court</h2>
+            
+            <div class="mb-6">
+                <div class="bg-gray-50 p-4 rounded-xl">
+                    <p class="text-gray-700 mb-2"><span class="font-semibold">Date:</span> <span id="modalCourtDate">-</span></p>
+                    <p class="text-gray-700 mb-2"><span class="font-semibold">Time:</span> <span id="modalCourtTime">-</span></p>
+                    <p class="text-gray-700"><span class="font-semibold">Court:</span> <span id="modalCourtNumber">-</span></p>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-gray-800 font-semibold mb-2">Your Name</label>
+                <input type="text" id="courtBookerName" required 
+                       class="w-full px-4 py-3 border-2 border-gray-300 focus:border-green-600 focus:outline-none"
+                       placeholder="John Smith">
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-gray-800 font-semibold mb-2">Email Address</label>
+                <input type="email" id="courtBookerEmail" required 
+                       class="w-full px-4 py-3 border-2 border-gray-300 focus:border-green-600 focus:outline-none"
+                       placeholder="john@example.com">
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="confirmCourtBooking()" 
+                        class="btn-primary text-white flex-1 py-4 rounded-xl font-semibold">
+                    Confirm Booking
+                </button>
+                <button onclick="closeCourtModal()" 
+                        class="bg-gray-200 text-gray-700 flex-1 py-4 rounded-xl font-semibold hover:bg-gray-300">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Environment Variable - Stripe Public Key would be loaded from environment
+        // Environment Variable - Stripe Public Key
         const STRIPE_PUBLIC_KEY = process.env.STRIPE_PUBLIC_KEY || 'pk_test_placeholder';
         
         // Booking state
         let bookingData = {
             date: '',
             time: '',
+            court: '',
             name: '',
             email: '',
             phone: ''
         };
         
         let selectedTimeSlot = null;
+        let selectedCourtDate = null;
+        let tempCourtBooking = null;
+        
+        // Court booking times (6 PM - 9 PM)
+        const COURT_TIMES = ['6:00 PM', '7:00 PM', '8:00 PM'];
+        const COURTS = [1, 2, 3, 4, 5];
+        
+        // Initialize localStorage for bookings
+        function initializeStorage() {
+            if (!localStorage.getItem('courtBookings')) {
+                localStorage.setItem('courtBookings', JSON.stringify({}));
+            }
+            if (!localStorage.getItem('lessonBookings')) {
+                localStorage.setItem('lessonBookings', JSON.stringify({}));
+            }
+        }
+        
+        function getCourtBookings() {
+            return JSON.parse(localStorage.getItem('courtBookings') || '{}');
+        }
+        
+        function saveCourtBooking(date, time, court, name, email) {
+            const bookings = getCourtBookings();
+            const key = `${date}_${time}_${court}`;
+            bookings[key] = { date, time, court, name, email, timestamp: Date.now() };
+            localStorage.setItem('courtBookings', JSON.stringify(bookings));
+        }
+        
+        function isCourtBooked(date, time, court) {
+            const bookings = getCourtBookings();
+            const key = `${date}_${time}_${court}`;
+            return !!bookings[key];
+        }
         
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            initializeStorage();
             initializeDatePicker();
             generateTimeSlots();
+            generateCourtCalendar();
+            
+            // Smooth scrolling for navigation
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
         });
+        
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
         
         function initializeDatePicker() {
             const dateInput = document.getElementById('lessonDate');
             const today = new Date();
             const minDate = new Date(today);
-            minDate.setDate(minDate.getDate() + 2); // Minimum 2 days in advance for 24-hour policy
+            minDate.setDate(minDate.getDate() + 2);
             
             dateInput.min = minDate.toISOString().split('T')[0];
             
-            // Set max date to 3 months from now
             const maxDate = new Date(today);
             maxDate.setMonth(maxDate.getMonth() + 3);
             dateInput.max = maxDate.toISOString().split('T')[0];
@@ -528,12 +801,10 @@
                 return;
             }
             
-            // Remove selection from all slots
             document.querySelectorAll('.time-slot').forEach(slot => {
                 slot.classList.remove('selected');
             });
             
-            // Select this slot
             element.classList.add('selected');
             selectedTimeSlot = element.getAttribute('data-time');
         }
@@ -545,9 +816,145 @@
             });
         }
         
+        function scrollToCourts() {
+            document.getElementById('courts').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+        
+        // Court Calendar Functions
+        function generateCourtCalendar() {
+            const calendar = document.getElementById('courtCalendar');
+            const today = new Date();
+            
+            // Show next 4 weeks
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            let html = days.map(day => `
+                <div class="text-center font-bold text-gray-600 p-2">${day}</div>
+            `).join('');
+            
+            for (let i = 0; i < 28; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() + i);
+                
+                const dateStr = date.toISOString().split('T')[0];
+                const dayNum = date.getDate();
+                const month = date.toLocaleDateString('en-US', { month: 'short' });
+                
+                html += `
+                    <div class="calendar-day card p-4 text-center cursor-pointer" 
+                         data-date="${dateStr}"
+                         onclick="selectCourtDate('${dateStr}')">
+                        <div class="text-sm text-gray-500">${month}</div>
+                        <div class="text-2xl font-bold text-gray-800">${dayNum}</div>
+                    </div>
+                `;
+            }
+            
+            calendar.innerHTML = html;
+        }
+        
+        function selectCourtDate(dateStr) {
+            selectedCourtDate = dateStr;
+            
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.classList.remove('selected');
+            });
+            
+            const selectedDay = document.querySelector(`[data-date="${dateStr}"]`);
+            if (selectedDay) {
+                selectedDay.classList.add('selected');
+            }
+            
+            displayCourtAvailability(dateStr);
+        }
+        
+        function displayCourtAvailability(dateStr) {
+            const availability = document.getElementById('courtAvailability');
+            const dateDisplay = document.getElementById('selectedDateDisplay');
+            const tableBody = document.getElementById('courtSlotsTable');
+            
+            const date = new Date(dateStr + 'T00:00:00');
+            dateDisplay.textContent = date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            let html = '';
+            COURT_TIMES.forEach(time => {
+                html += `<tr class="border-t"><td class="p-4 font-semibold text-gray-700">${time}</td>`;
+                
+                COURTS.forEach(court => {
+                    const isBooked = isCourtBooked(dateStr, time, court);
+                    const slotClass = isBooked ? 'booked' : 'available';
+                    const clickHandler = isBooked ? '' : `onclick="openCourtBookingModal('${dateStr}', '${time}', ${court})"`;
+                    
+                    html += `
+                        <td class="p-4">
+                            <div class="court-slot ${slotClass} p-3 rounded-lg text-center font-semibold cursor-pointer"
+                                 ${clickHandler}>
+                                ${isBooked ? 'Booked' : 'Available'}
+                            </div>
+                        </td>
+                    `;
+                });
+                
+                html += '</tr>';
+            });
+            
+            tableBody.innerHTML = html;
+            availability.classList.remove('hidden');
+        }
+        
+        function openCourtBookingModal(date, time, court) {
+            tempCourtBooking = { date, time, court };
+            
+            document.getElementById('modalCourtDate').textContent = formatDate(date);
+            document.getElementById('modalCourtTime').textContent = time;
+            document.getElementById('modalCourtNumber').textContent = `Court ${court}`;
+            
+            document.getElementById('courtBookingModal').classList.add('active');
+        }
+        
+        function closeCourtModal() {
+            document.getElementById('courtBookingModal').classList.remove('active');
+            document.getElementById('courtBookerName').value = '';
+            document.getElementById('courtBookerEmail').value = '';
+            tempCourtBooking = null;
+        }
+        
+        function confirmCourtBooking() {
+            const name = document.getElementById('courtBookerName').value.trim();
+            const email = document.getElementById('courtBookerEmail').value.trim();
+            
+            if (!name || !email || !isValidEmail(email)) {
+                alert('Please enter valid name and email.');
+                return;
+            }
+            
+            if (tempCourtBooking) {
+                saveCourtBooking(
+                    tempCourtBooking.date,
+                    tempCourtBooking.time,
+                    tempCourtBooking.court,
+                    name,
+                    email
+                );
+                
+                closeCourtModal();
+                displayCourtAvailability(tempCourtBooking.date);
+                
+                alert(`Court ${tempCourtBooking.court} reserved for ${tempCourtBooking.time} on ${formatDate(tempCourtBooking.date)}!`);
+            }
+        }
+        
+        // Lesson Booking Functions
         function proceedToPayment() {
-            // Validate form
             const date = document.getElementById('lessonDate').value;
+            const court = document.getElementById('lessonCourt').value;
             const name = document.getElementById('clientName').value.trim();
             const email = document.getElementById('clientEmail').value.trim();
             
@@ -561,6 +968,17 @@
                 return;
             }
             
+            if (!court) {
+                alert('Please select a court for your lesson.');
+                return;
+            }
+            
+            // Check if court is available
+            if (isCourtBooked(date, selectedTimeSlot, court)) {
+                alert('This court is already booked for the selected time. Please choose another court.');
+                return;
+            }
+            
             if (!name) {
                 alert('Please enter your name.');
                 return;
@@ -571,23 +989,21 @@
                 return;
             }
             
-            // Store booking data
             bookingData.date = date;
             bookingData.time = selectedTimeSlot;
+            bookingData.court = court;
             bookingData.name = name;
             bookingData.email = email;
             
-            // Update summary
             document.getElementById('summaryDate').textContent = formatDate(date);
             document.getElementById('summaryTime').textContent = selectedTimeSlot;
+            document.getElementById('summaryCourt').textContent = `Court ${court}`;
             document.getElementById('summaryName').textContent = name;
             document.getElementById('summaryEmail').textContent = email;
             
-            // Show step 2
             document.getElementById('step1').classList.add('hidden');
             document.getElementById('step2').classList.remove('hidden');
             
-            // Scroll to top of booking section
             document.getElementById('booking').scrollIntoView({ 
                 behavior: 'smooth',
                 block: 'start'
@@ -600,22 +1016,14 @@
         }
         
         function processPayment() {
-            // Simulate Stripe payment processing
-            // In production, this would initialize Stripe with:
-            // const stripe = Stripe(STRIPE_PUBLIC_KEY);
-            // and create a proper checkout session
-            
             const paymentBtn = event.target;
             paymentBtn.disabled = true;
             paymentBtn.textContent = 'Processing Payment...';
             
-            // Simulate payment processing delay
             setTimeout(() => {
-                // Payment successful - move to phone collection
                 document.getElementById('step2').classList.add('hidden');
                 document.getElementById('step3').classList.remove('hidden');
                 
-                // Scroll to top of booking section
                 document.getElementById('booking').scrollIntoView({ 
                     behavior: 'smooth',
                     block: 'start'
@@ -636,15 +1044,22 @@
             
             bookingData.phone = phone;
             
-            // Update confirmation modal
+            // Save the court booking for the lesson
+            saveCourtBooking(
+                bookingData.date,
+                bookingData.time,
+                bookingData.court,
+                bookingData.name,
+                bookingData.email
+            );
+            
             document.getElementById('confirmDate').textContent = formatDate(bookingData.date);
             document.getElementById('confirmTime').textContent = bookingData.time;
+            document.getElementById('confirmCourt').textContent = `Court ${bookingData.court}`;
             document.getElementById('confirmName').textContent = bookingData.name;
             
-            // Show confirmation modal
             document.getElementById('confirmationModal').classList.add('active');
             
-            // Reset form
             setTimeout(() => {
                 resetBookingForm();
             }, 500);
@@ -667,6 +1082,7 @@
             bookingData = {
                 date: '',
                 time: '',
+                court: '',
                 name: '',
                 email: '',
                 phone: ''
@@ -679,7 +1095,6 @@
         }
         
         function isValidPhone(phone) {
-            // Accept various phone formats
             return /^[\d\s\-\(\)\.]+$/.test(phone) && phone.replace(/\D/g, '').length >= 10;
         }
         
@@ -693,11 +1108,16 @@
             });
         }
         
-        // Close modal when clicking outside
+        // Close modals when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('confirmationModal');
-            if (event.target === modal) {
+            const confirmModal = document.getElementById('confirmationModal');
+            const courtModal = document.getElementById('courtBookingModal');
+            
+            if (event.target === confirmModal) {
                 closeModal();
+            }
+            if (event.target === courtModal) {
+                closeCourtModal();
             }
         }
     </script>
