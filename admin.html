@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Rhinebeck Tennis Club</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --hunter-green: #2d5016;
+            --cream: #f8f6f0;
+            --navy: #1e3a5f;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--cream);
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .btn-primary {
+            background-color: var(--hunter-green);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3d6b1f;
+        }
+        
+        .court-slot {
+            transition: all 0.2s ease;
+        }
+        
+        .court-slot.available {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid #10b981;
+        }
+        
+        .court-slot.blocked {
+            background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+            border: 2px solid #ef4444;
+        }
+        
+        .court-slot:hover {
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen">
+    
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-6">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full">
+            <h1 class="text-3xl font-bold mb-2 text-gray-800" style="color: var(--hunter-green);">Admin Login</h1>
+            <p class="text-gray-600 mb-8">Rhinebeck Tennis Club</p>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 font-semibold mb-2">Password</label>
+                <input type="password" id="adminPassword" 
+                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-green-600 focus:outline-none"
+                       placeholder="Enter admin password"
+                       onkeypress="if(event.key === 'Enter') login()">
+            </div>
+            
+            <button onclick="login()" class="btn-primary text-white w-full py-3 rounded-xl font-semibold">
+                Login
+            </button>
+            
+            <p id="loginError" class="text-red-500 mt-4 text-sm hidden">Incorrect password</p>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="hidden min-h-screen">
+        <!-- Header -->
+        <div class="bg-white shadow-md">
+            <div class="container mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-2xl font-bold" style="color: var(--hunter-green);">Court Management</h1>
+                    <div class="flex gap-4">
+                        <a href="index.html" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                            View Site
+                        </a>
+                        <button onclick="logout()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="container mx-auto px-6 py-8 max-w-7xl">
+            
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-gray-600 text-sm font-semibold mb-2">Total Bookings</h3>
+                    <p class="text-3xl font-bold" style="color: var(--hunter-green);" id="totalBookings">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-gray-600 text-sm font-semibold mb-2">Today's Bookings</h3>
+                    <p class="text-3xl font-bold" style="color: var(--navy);" id="todayBookings">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-gray-600 text-sm font-semibold mb-2">Blocked Slots</h3>
+                    <p class="text-3xl font-bold text-red-600" id="blockedSlots">0</p>
+                </div>
+            </div>
+
+            <!-- Calendar Selection -->
+            <div class="bg-white p-8 rounded-xl shadow-md mb-8">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800">Select Date to Manage</h2>
+                <div id="adminCalendar" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px;">
+                    <!-- Calendar generated by JS -->
+                </div>
+            </div>
+
+            <!-- Court Availability Management -->
+            <div class="bg-white p-8 rounded-xl shadow-md">
+                <h2 class="text-2xl font-bold mb-2 text-gray-800">Court Availability</h2>
+                <p class="text-gray-600 mb-6">Selected Date: <span id="adminSelectedDate" class="font-semibold">-</span></p>
+                
+                <div class="mb-6 flex gap-4 items-center">
+                    <button onclick="blockAllCourts()" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-semibold">
+                        Block All Slots
+                    </button>
+                    <button onclick="unblockAllCourts()" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-semibold">
+                        Unblock All Slots
+                    </button>
+                    <button onclick="refreshAdmin()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold">
+                        Refresh
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="p-4 text-left font-bold text-gray-800">Time</th>
+                                <th class="p-4 text-center font-bold text-gray-800">Court 1</th>
+                                <th class="p-4 text-center font-bold text-gray-800">Court 2</th>
+                                <th class="p-4 text-center font-bold text-gray-800">Court 3</th>
+                                <th class="p-4 text-center font-bold text-gray-800">Court 4</th>
+                                <th class="p-4 text-center font-bold text-gray-800">Court 5</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminCourtTable">
+                            <!-- Generated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-6 flex items-center gap-6">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded court-slot available"></div>
+                        <span class="text-sm text-gray-600">Available</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded court-slot blocked"></div>
+                        <span class="text-sm text-gray-600">Blocked by Admin</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Bookings List -->
+            <div class="bg-white p-8 rounded-xl shadow-md mt-8">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800">All Bookings</h2>
+                <div id="bookingsList" class="space-y-4">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_PASSWORD = 'Tennis123';
+        const COURT_TIMES = ['6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', 
+                             '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', 
+                             '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM'];
+        const COURTS = [1, 2, 3, 4, 5];
+        let selectedDate = null;
+
+        // Check if already logged in
+        if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+            showDashboard();
+        }
+
+        function login() {
+            const password = document.getElementById('adminPassword').value;
+            const error = document.getElementById('loginError');
+            
+            if (password === ADMIN_PASSWORD) {
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                error.classList.add('hidden');
+                showDashboard();
+            } else {
+                error.classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            location.reload();
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            initAdmin();
+        }
+
+        function initAdmin() {
+            generateAdminCalendar();
+            updateStats();
+            displayAllBookings();
+        }
+
+        function generateAdminCalendar() {
+            const calendar = document.getElementById('adminCalendar');
+            const today = new Date();
+            let html = '';
+            
+            for (let i = 0; i < 21; i++) {
+                const date = new Date();
+                date.setDate(today.getDate() + i);
+                
+                const dateStr = date.toISOString().split('T')[0];
+                const dayNum = date.getDate();
+                const month = date.toLocaleDateString('en-US', { month: 'short' });
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                
+                const bgColor = i === 0 ? '#2d5016' : '#ffffff';
+                const textColor = i === 0 ? '#ffffff' : '#1f2937';
+                
+                html += `
+                    <div style="background: ${bgColor}; color: ${textColor}; padding: 16px; border-radius: 12px; 
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; text-align: center;
+                                border: 2px solid #e5e7eb; transition: all 0.2s ease;"
+                         class="admin-calendar-day" 
+                         data-date="${dateStr}"
+                         onclick="selectAdminDate('${dateStr}')">
+                        <div style="font-size: 11px; font-weight: 600; margin-bottom: 4px; opacity: 0.8;">${dayName}</div>
+                        <div style="font-size: 13px; margin-bottom: 4px;">${month}</div>
+                        <div style="font-size: 28px; font-weight: 700;">${dayNum}</div>
+                    </div>
+                `;
+            }
+            
+            calendar.innerHTML = html;
+            
+            // Auto-select today
+            const todayStr = today.toISOString().split('T')[0];
+            setTimeout(() => selectAdminDate(todayStr), 100);
+        }
+
+        function selectAdminDate(dateStr) {
+            selectedDate = dateStr;
+            
+            // Update visual selection
+            document.querySelectorAll('.admin-calendar-day').forEach(day => {
+                day.style.background = '#ffffff';
+                day.style.color = '#1f2937';
+            });
+            
+            const selectedDay = document.querySelector(`[data-date="${dateStr}"]`);
+            if (selectedDay) {
+                selectedDay.style.background = '#2d5016';
+                selectedDay.style.color = '#ffffff';
+            }
+            
+            displayAdminCourts(dateStr);
+        }
+
+        function displayAdminCourts(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            const formatted = date.toLocaleDateString('en-US', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+            
+            document.getElementById('adminSelectedDate').textContent = formatted;
+            
+            const tableBody = document.getElementById('adminCourtTable');
+            let html = '';
+            
+            COURT_TIMES.forEach(time => {
+                html += `<tr class="border-t"><td class="p-4 font-semibold text-gray-700">${time}</td>`;
+                
+                COURTS.forEach(court => {
+                    const status = getCourtStatus(dateStr, time, court);
+                    const slotClass = status === 'blocked' ? 'blocked' : 'available';
+                    const label = status === 'blocked' ? 'BLOCKED' : 'Available';
+                    
+                    html += `
+                        <td class="p-4">
+                            <div class="court-slot ${slotClass} p-3 rounded-lg text-center font-semibold cursor-pointer"
+                                 onclick="toggleCourtBlock('${dateStr}', '${time}', ${court})">
+                                ${label}
+                            </div>
+                        </td>
+                    `;
+                });
+                
+                html += '</tr>';
+            });
+            
+            tableBody.innerHTML = html;
+        }
+
+        function getCourtStatus(date, time, court) {
+            const bookings = JSON.parse(localStorage.getItem('courtBookings') || '{}');
+            const key = `${date}_${time}_${court}`;
+            
+            if (bookings[key]) {
+                // Check if it's an admin block or a real booking
+                return bookings[key].name === 'ADMIN_BLOCK' ? 'blocked' : 'booked';
+            }
+            return 'available';
+        }
+
+        function toggleCourtBlock(date, time, court) {
+            const bookings = JSON.parse(localStorage.getItem('courtBookings') || '{}');
+            const key = `${date}_${time}_${court}`;
+            
+            if (bookings[key] && bookings[key].name === 'ADMIN_BLOCK') {
+                // Unblock
+                delete bookings[key];
+            } else if (!bookings[key]) {
+                // Block (only if not already booked by user)
+                bookings[key] = {
+                    date,
+                    time,
+                    court,
+                    name: 'ADMIN_BLOCK',
+                    email: 'admin@rhinebecktennis.com',
+                    timestamp: Date.now()
+                };
+            } else {
+                alert('This slot is booked by a customer and cannot be blocked.');
+                return;
+            }
+            
+            localStorage.setItem('courtBookings', JSON.stringify(bookings));
+            displayAdminCourts(selectedDate);
+            updateStats();
+        }
+
+        function blockAllCourts() {
+            if (!selectedDate) return;
+            if (!confirm('Block all courts for this date?')) return;
+            
+            const bookings = JSON.parse(localStorage.getItem('courtBookings') || '{}');
+            
+            COURT_TIMES.forEach(time => {
+                COURTS.forEach(court => {
+                    const key = `${selectedDate}_${time}_${court}`;
+                    if (!bookings[key]) {
+                        bookings[key] = {
+                            date: selectedDate,
+                            time,
+                            court,
+                            name: 'ADMIN_BLOCK',
+                            email: 'admin@rhinebecktennis.com',
+                            timestamp: Date.now()
+                        };
+                    }
+                });
+            });
+            
+            localStorage.setItem('courtBookings', JSON.stringify(bookings));
+            displayAdminCourts(selectedDate);
+            updateStats();
+        }
+
+        function unblockAllCourts() {
+            if (!selectedDate) return;
+            if (!confirm('Unblock all admin-blocked courts for this date?')) return;
+            
+            const bookings = JSON.parse(localStorage.getItem('courtBookings') || '{}');
+            
+            COURT_TIMES.forEach(time => {
+                COURTS.forEach(court => {
+                    const key = `${selectedDate}_${time}_${court}`;
+                    if (bookings[key] && bookings[key].name === 'ADMIN_BLOCK') {
+                        delete bookings[key];
+                    }
+                });
+            });
+            
+            localStorage.setItem('courtBookings', JSON.stringify(bookings));
+            displayAdminCourts(selectedDate);
+            updateStats();
+        }
+
+        function refreshAdmin() {
+            if (selectedDate) {
+                displayAdminCourts(selectedDate);
+            }
+            updateStats();
+            displayAllBookings();
+        }
+
+        function updateStats() {
+            const bookings = JSON.parse(localStorage.getItem('courtBookings') || '{}');
+            const today = new Date().toISOString().split('T')[0];
+            
+            let total = 0;
+            let todayCount = 0;
+            let blocked = 0;
+            
+            Object.values(bookings).forEach(booking => {
+                total++;
+                if (booking.date === today) todayCount++;
+                if (booking.name === 'ADMIN_BLOCK') blocked++;
+            });
+            
+            document.getElementById('totalBookings').textContent = total;
+            document.getElementById('todayBookings').textContent = todayCount;
+            document.getElementById('blockedSlots').textContent = blocked;
+        }
+
+        function displayAllBookings() {
+            const bookings = JSON.parse(localStorage.getItem('courtBookings') || '{}');
+            const container = document.getElementById('bookingsList');
+            
+            const bookingArray = Object.values(bookings)
+                .filter(b => b.name !== 'ADMIN_BLOCK')
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            if (bookingArray.length === 0) {
+                container.innerHTML = '<p class="text-gray-500">No customer bookings yet.</p>';
+                return;
+            }
+            
+            let html = '';
+            bookingArray.forEach(booking => {
+                const date = new Date(booking.date + 'T00:00:00');
+                const formatted = date.toLocaleDateString('en-US', { 
+                    month: 'short', day: 'numeric', year: 'numeric' 
+                });
+                
+                html += `
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold text-gray-800">${booking.name}</p>
+                                <p class="text-sm text-gray-600">${booking.email}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold" style="color: var(--hunter-green);">Court ${booking.court}</p>
+                                <p class="text-sm text-gray-600">${formatted} at ${booking.time}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
