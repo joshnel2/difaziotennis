@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhinebeck Tennis Club - Private Coaching with Derek Difazio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --hunter-green: #2d5016;
+            --cream: #f8f6f0;
+            --navy: #1e3a5f;
+            --gold: #d4af37;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--cream);
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, var(--hunter-green) 0%, var(--navy) 100%);
+        }
+        
+        .btn-primary {
+            background-color: var(--hunter-green);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3d6b1f;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(45, 80, 22, 0.3);
+        }
+        
+        .section-padding {
+            padding: 5rem 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .section-padding {
+                padding: 3rem 1.5rem;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        input, select, textarea {
+            border-radius: 0.75rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .time-slot {
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+        
+        .time-slot:hover {
+            border-color: var(--hunter-green);
+            background-color: #f0f9ff;
+        }
+        
+        .time-slot.selected {
+            background-color: var(--hunter-green);
+            color: white;
+            border-color: var(--hunter-green);
+        }
+        
+        .time-slot.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f3f4f6;
+        }
+        
+        .time-slot.disabled:hover {
+            border-color: #e5e7eb;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    
+    <!-- Hero Section -->
+    <section class="hero-bg text-white min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-0 left-0 w-96 h-96 bg-white rounded-full filter blur-3xl"></div>
+            <div class="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full filter blur-3xl"></div>
+        </div>
+        
+        <div class="container mx-auto px-6 text-center relative z-10">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                Rhinebeck Tennis Club
+            </h1>
+            <p class="text-2xl md:text-3xl mb-4 opacity-90 font-light">
+                Private Coaching with Derek Difazio
+            </p>
+            <p class="text-lg md:text-xl mb-12 opacity-80 max-w-2xl mx-auto">
+                Elevate your game with personalized instruction on our pristine courts
+            </p>
+            <button onclick="scrollToBooking()" class="btn-primary text-white px-12 py-5 rounded-full text-xl font-semibold shadow-2xl">
+                Book Your Private Lesson
+            </button>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section-padding bg-white">
+        <div class="container mx-auto max-w-4xl">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-8 text-gray-800">
+                Welcome to Excellence
+            </h2>
+            <p class="text-lg text-gray-700 text-center leading-relaxed mb-6">
+                Nestled in the heart of the Hudson Valley, Rhinebeck Tennis Club has been a sanctuary for tennis enthusiasts since 1985. Our meticulously maintained courts and world-class facilities provide the perfect environment for players of all levels to refine their skills.
+            </p>
+            <p class="text-lg text-gray-700 text-center leading-relaxed">
+                With a rich tradition of excellence and a commitment to personalized coaching, we offer an unparalleled tennis experience in an atmosphere of refined elegance and warm hospitality.
+            </p>
+        </div>
+    </section>
+
+    <!-- Coaching Section -->
+    <section class="section-padding" style="background-color: var(--cream);">
+        <div class="container mx-auto max-w-6xl">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6" style="color: var(--hunter-green);">
+                        Meet Your Coach
+                    </h2>
+                    <h3 class="text-3xl font-semibold mb-6 text-gray-800">
+                        Derek Difazio
+                    </h3>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-6">
+                        With over 15 years of professional coaching experience, Derek Difazio brings a unique blend of technical expertise and strategic insight to every lesson. A former Division I player and USPTA certified professional, Derek has coached players from beginner to tournament level.
+                    </p>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-8">
+                        His coaching philosophy emphasizes proper technique, tactical awareness, and mental fortitude, ensuring that each student develops a complete and sustainable game.
+                    </p>
+                    <div class="card p-8 mb-8">
+                        <div class="flex items-baseline mb-4">
+                            <span class="text-5xl font-bold" style="color: var(--hunter-green);">$160</span>
+                            <span class="text-xl text-gray-600 ml-3">per hour</span>
+                        </div>
+                        <p class="text-gray-700 mb-6">Private one-on-one instruction tailored to your specific goals and skill level.</p>
+                        <button onclick="scrollToBooking()" class="btn-primary text-white w-full py-4 rounded-xl text-lg font-semibold">
+                            Book Your Lesson Now
+                        </button>
+                    </div>
+                </div>
+                <div class="card p-8">
+                    <div class="aspect-square bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center">
+                        <svg class="w-32 h-32 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-center text-gray-500 mt-4 text-sm">Professional Tennis Coach</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section id="booking" class="section-padding bg-white">
+        <div class="container mx-auto max-w-4xl">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800">
+                Book Your Private Lesson
+            </h2>
+            <p class="text-center text-gray-600 mb-12 text-lg">
+                Select your preferred date and time to begin
+            </p>
+            
+            <div class="card p-8 md:p-12">
+                <form id="bookingForm">
+                    <!-- Step 1: Selection -->
+                    <div id="step1" class="booking-step">
+                        <div class="mb-8">
+                            <label class="block text-gray-800 font-semibold mb-3 text-lg">Select Date</label>
+                            <input type="date" id="lessonDate" required 
+                                   class="w-full px-6 py-4 border-2 border-gray-300 focus:border-green-600 focus:outline-none text-lg">
+                        </div>
+                        
+                        <div class="mb-8">
+                            <label class="block text-gray-800 font-semibold mb-3 text-lg">Select Time</label>
+                            <div id="timeSlots" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <!-- Time slots will be generated by JavaScript -->
+                            </div>
+                            <p class="text-sm text-gray-500 mt-3">* Time slots within 24 hours are unavailable due to our cancellation policy</p>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <label class="block text-gray-800 font-semibold mb-3 text-lg">Your Name</label>
+                            <input type="text" id="clientName" required 
+                                   class="w-full px-6 py-4 border-2 border-gray-300 focus:border-green-600 focus:outline-none text-lg"
+                                   placeholder="John Smith">
+                        </div>
+                        
+                        <div class="mb-8">
+                            <label class="block text-gray-800 font-semibold mb-3 text-lg">Email Address</label>
+                            <input type="email" id="clientEmail" required 
+                                   class="w-full px-6 py-4 border-2 border-gray-300 focus:border-green-600 focus:outline-none text-lg"
+                                   placeholder="john@example.com">
+                        </div>
+                        
+                        <button type="button" onclick="proceedToPayment()" 
+                                class="btn-primary text-white w-full py-5 rounded-xl text-xl font-semibold">
+                            Continue to Payment
+                        </button>
+                    </div>
+                    
+                    <!-- Step 2: Payment (Hidden initially) -->
+                    <div id="step2" class="booking-step hidden">
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-bold mb-4 text-gray-800">Lesson Summary</h3>
+                            <div class="bg-gray-50 p-6 rounded-xl mb-6">
+                                <div class="flex justify-between mb-3">
+                                    <span class="text-gray-700">Date:</span>
+                                    <span class="font-semibold" id="summaryDate">-</span>
+                                </div>
+                                <div class="flex justify-between mb-3">
+                                    <span class="text-gray-700">Time:</span>
+                                    <span class="font-semibold" id="summaryTime">-</span>
+                                </div>
+                                <div class="flex justify-between mb-3">
+                                    <span class="text-gray-700">Name:</span>
+                                    <span class="font-semibold" id="summaryName">-</span>
+                                </div>
+                                <div class="flex justify-between mb-3">
+                                    <span class="text-gray-700">Email:</span>
+                                    <span class="font-semibold" id="summaryEmail">-</span>
+                                </div>
+                                <hr class="my-4">
+                                <div class="flex justify-between text-xl">
+                                    <span class="font-bold text-gray-800">Total:</span>
+                                    <span class="font-bold" style="color: var(--hunter-green);">$160.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6 mb-8">
+                            <h4 class="font-bold text-gray-800 mb-2 text-lg">24-Hour Cancellation Policy</h4>
+                            <p class="text-gray-700">
+                                Cancellations must be made at least 24 hours in advance to receive a full refund. 
+                                Cancellations made within 24 hours of the scheduled lesson are non-refundable.
+                            </p>
+                        </div>
+                        
+                        <button type="button" onclick="processPayment()" 
+                                class="btn-primary text-white w-full py-5 rounded-xl text-xl font-semibold mb-4">
+                            Pay $160.00 with Stripe
+                        </button>
+                        
+                        <button type="button" onclick="backToStep1()" 
+                                class="w-full py-4 rounded-xl text-lg font-semibold text-gray-600 hover:bg-gray-100">
+                            Back to Edit Details
+                        </button>
+                    </div>
+                    
+                    <!-- Step 3: Phone Collection (Hidden initially) -->
+                    <div id="step3" class="booking-step hidden">
+                        <div class="text-center mb-8">
+                            <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
+                                <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h3>
+                            <p class="text-gray-600">Please provide your phone number for lesson confirmation</p>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <label class="block text-gray-800 font-semibold mb-3 text-lg">Phone Number *</label>
+                            <input type="tel" id="clientPhone" required 
+                                   class="w-full px-6 py-4 border-2 border-gray-300 focus:border-green-600 focus:outline-none text-lg"
+                                   placeholder="(555) 555-5555">
+                            <p class="text-sm text-gray-500 mt-2">Required for confirmation purposes</p>
+                        </div>
+                        
+                        <button type="button" onclick="completeBooking()" 
+                                class="btn-primary text-white w-full py-5 rounded-xl text-xl font-semibold">
+                            Complete Booking
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section-padding" style="background-color: var(--cream);">
+        <div class="container mx-auto max-w-4xl text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-8 text-gray-800">
+                Get in Touch
+            </h2>
+            <p class="text-lg text-gray-700 mb-8">
+                Have questions about our coaching programs or facilities? We're here to help.
+            </p>
+            <div class="card p-8 inline-block">
+                <p class="text-gray-700 mb-3 text-lg">Email us at:</p>
+                <a href="mailto:difaziotennis@gmail.com" 
+                   class="text-2xl font-semibold hover:underline" 
+                   style="color: var(--hunter-green);">
+                    difaziotennis@gmail.com
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-6 text-center">
+            <h3 class="text-2xl font-bold mb-4" style="font-family: 'Playfair Display', serif;">
+                Rhinebeck Tennis Club
+            </h3>
+            <p class="text-gray-400 mb-4">
+                Excellence in Tennis Since 1985
+            </p>
+            <p class="text-gray-500 text-sm">
+                &copy; 2025 Rhinebeck Tennis Club. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-green-100 rounded-full mb-6">
+                    <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold mb-2" style="color: var(--hunter-green);">Lesson Booked!</h2>
+                <p class="text-gray-600 text-lg">Your private lesson has been confirmed</p>
+            </div>
+            
+            <div class="bg-gray-50 p-6 rounded-xl mb-8">
+                <h3 class="font-bold text-gray-800 mb-4 text-lg">Lesson Details</h3>
+                <div class="space-y-3 text-left">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Date:</span>
+                        <span class="font-semibold" id="confirmDate">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Time:</span>
+                        <span class="font-semibold" id="confirmTime">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Student:</span>
+                        <span class="font-semibold" id="confirmName">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-green-50 border-2 border-green-300 rounded-xl p-6 mb-6">
+                <h3 class="font-bold text-gray-800 mb-4 text-lg">Your Coach's Contact Information</h3>
+                <div class="space-y-2 text-left">
+                    <p class="text-gray-700"><span class="font-semibold">Name:</span> Derek Difazio</p>
+                    <p class="text-gray-700">
+                        <span class="font-semibold">Email:</span> 
+                        <a href="mailto:difaziotennis@gmail.com" class="hover:underline" style="color: var(--hunter-green);">
+                            difaziotennis@gmail.com
+                        </a>
+                    </p>
+                    <p class="text-gray-700"><span class="font-semibold">Phone:</span> (555) 555-1234</p>
+                </div>
+            </div>
+            
+            <p class="text-gray-600 mb-6 text-sm">
+                A confirmation email has been sent to your inbox. Derek will contact you shortly to confirm your lesson.
+            </p>
+            
+            <button onclick="closeModal()" 
+                    class="btn-primary text-white w-full py-4 rounded-xl text-lg font-semibold">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Environment Variable - Stripe Public Key would be loaded from environment
+        const STRIPE_PUBLIC_KEY = process.env.STRIPE_PUBLIC_KEY || 'pk_test_placeholder';
+        
+        // Booking state
+        let bookingData = {
+            date: '',
+            time: '',
+            name: '',
+            email: '',
+            phone: ''
+        };
+        
+        let selectedTimeSlot = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDatePicker();
+            generateTimeSlots();
+        });
+        
+        function initializeDatePicker() {
+            const dateInput = document.getElementById('lessonDate');
+            const today = new Date();
+            const minDate = new Date(today);
+            minDate.setDate(minDate.getDate() + 2); // Minimum 2 days in advance for 24-hour policy
+            
+            dateInput.min = minDate.toISOString().split('T')[0];
+            
+            // Set max date to 3 months from now
+            const maxDate = new Date(today);
+            maxDate.setMonth(maxDate.getMonth() + 3);
+            dateInput.max = maxDate.toISOString().split('T')[0];
+            
+            dateInput.addEventListener('change', updateTimeSlots);
+        }
+        
+        function generateTimeSlots() {
+            const timeSlotsContainer = document.getElementById('timeSlots');
+            const slots = [
+                '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM',
+                '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM',
+                '4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM'
+            ];
+            
+            timeSlotsContainer.innerHTML = slots.map(time => `
+                <button type="button" 
+                        class="time-slot px-4 py-3 rounded-xl font-semibold text-gray-700 cursor-pointer"
+                        data-time="${time}"
+                        onclick="selectTimeSlot(this)">
+                    ${time}
+                </button>
+            `).join('');
+        }
+        
+        function updateTimeSlots() {
+            const dateInput = document.getElementById('lessonDate');
+            const selectedDate = new Date(dateInput.value + 'T00:00:00');
+            const now = new Date();
+            const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            
+            const timeSlots = document.querySelectorAll('.time-slot');
+            
+            timeSlots.forEach(slot => {
+                const timeStr = slot.getAttribute('data-time');
+                const slotDateTime = createDateTime(selectedDate, timeStr);
+                
+                if (slotDateTime <= twentyFourHoursFromNow) {
+                    slot.classList.add('disabled');
+                    slot.disabled = true;
+                } else {
+                    slot.classList.remove('disabled');
+                    slot.disabled = false;
+                }
+            });
+        }
+        
+        function createDateTime(date, timeStr) {
+            const [time, period] = timeStr.split(' ');
+            let [hours, minutes] = time.split(':').map(Number);
+            
+            if (period === 'PM' && hours !== 12) {
+                hours += 12;
+            } else if (period === 'AM' && hours === 12) {
+                hours = 0;
+            }
+            
+            const dateTime = new Date(date);
+            dateTime.setHours(hours, minutes || 0, 0, 0);
+            return dateTime;
+        }
+        
+        function selectTimeSlot(element) {
+            if (element.classList.contains('disabled')) {
+                return;
+            }
+            
+            // Remove selection from all slots
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            
+            // Select this slot
+            element.classList.add('selected');
+            selectedTimeSlot = element.getAttribute('data-time');
+        }
+        
+        function scrollToBooking() {
+            document.getElementById('booking').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+        
+        function proceedToPayment() {
+            // Validate form
+            const date = document.getElementById('lessonDate').value;
+            const name = document.getElementById('clientName').value.trim();
+            const email = document.getElementById('clientEmail').value.trim();
+            
+            if (!date) {
+                alert('Please select a date for your lesson.');
+                return;
+            }
+            
+            if (!selectedTimeSlot) {
+                alert('Please select a time slot for your lesson.');
+                return;
+            }
+            
+            if (!name) {
+                alert('Please enter your name.');
+                return;
+            }
+            
+            if (!email || !isValidEmail(email)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            
+            // Store booking data
+            bookingData.date = date;
+            bookingData.time = selectedTimeSlot;
+            bookingData.name = name;
+            bookingData.email = email;
+            
+            // Update summary
+            document.getElementById('summaryDate').textContent = formatDate(date);
+            document.getElementById('summaryTime').textContent = selectedTimeSlot;
+            document.getElementById('summaryName').textContent = name;
+            document.getElementById('summaryEmail').textContent = email;
+            
+            // Show step 2
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+            
+            // Scroll to top of booking section
+            document.getElementById('booking').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+        
+        function backToStep1() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+        }
+        
+        function processPayment() {
+            // Simulate Stripe payment processing
+            // In production, this would initialize Stripe with:
+            // const stripe = Stripe(STRIPE_PUBLIC_KEY);
+            // and create a proper checkout session
+            
+            const paymentBtn = event.target;
+            paymentBtn.disabled = true;
+            paymentBtn.textContent = 'Processing Payment...';
+            
+            // Simulate payment processing delay
+            setTimeout(() => {
+                // Payment successful - move to phone collection
+                document.getElementById('step2').classList.add('hidden');
+                document.getElementById('step3').classList.remove('hidden');
+                
+                // Scroll to top of booking section
+                document.getElementById('booking').scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                
+                paymentBtn.disabled = false;
+                paymentBtn.textContent = 'Pay $160.00 with Stripe';
+            }, 2000);
+        }
+        
+        function completeBooking() {
+            const phone = document.getElementById('clientPhone').value.trim();
+            
+            if (!phone || !isValidPhone(phone)) {
+                alert('Please enter a valid phone number.');
+                return;
+            }
+            
+            bookingData.phone = phone;
+            
+            // Update confirmation modal
+            document.getElementById('confirmDate').textContent = formatDate(bookingData.date);
+            document.getElementById('confirmTime').textContent = bookingData.time;
+            document.getElementById('confirmName').textContent = bookingData.name;
+            
+            // Show confirmation modal
+            document.getElementById('confirmationModal').classList.add('active');
+            
+            // Reset form
+            setTimeout(() => {
+                resetBookingForm();
+            }, 500);
+        }
+        
+        function closeModal() {
+            document.getElementById('confirmationModal').classList.remove('active');
+        }
+        
+        function resetBookingForm() {
+            document.getElementById('bookingForm').reset();
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            selectedTimeSlot = null;
+            
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+            
+            bookingData = {
+                date: '',
+                time: '',
+                name: '',
+                email: '',
+                phone: ''
+            };
+        }
+        
+        // Validation helpers
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+        
+        function isValidPhone(phone) {
+            // Accept various phone formats
+            return /^[\d\s\-\(\)\.]+$/.test(phone) && phone.replace(/\D/g, '').length >= 10;
+        }
+        
+        function formatDate(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('confirmationModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
