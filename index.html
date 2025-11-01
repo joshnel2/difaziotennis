@@ -827,15 +827,23 @@
         
         // Court Calendar Functions
         function generateCourtCalendar() {
+            console.log('Generating court calendar...');
             const calendar = document.getElementById('courtCalendar');
+            
+            if (!calendar) {
+                console.error('Calendar element not found!');
+                return;
+            }
+            
             const today = new Date();
+            console.log('Today:', today);
             
             // Show next 14 days
             let html = '';
             
             for (let i = 0; i < 14; i++) {
-                const date = new Date(today);
-                date.setDate(date.getDate() + i);
+                const date = new Date();
+                date.setDate(today.getDate() + i);
                 
                 const dateStr = date.toISOString().split('T')[0];
                 const dayNum = date.getDate();
@@ -843,7 +851,7 @@
                 const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
                 
                 html += `
-                    <div class="calendar-day card p-4 text-center cursor-pointer" 
+                    <div class="calendar-day card p-4 text-center cursor-pointer hover:shadow-lg transition-all" 
                          data-date="${dateStr}"
                          onclick="selectCourtDate('${dateStr}')">
                         <div class="text-xs text-gray-500 font-semibold">${dayName}</div>
@@ -854,13 +862,18 @@
             }
             
             calendar.innerHTML = html;
+            console.log('Calendar HTML set, total days:', 14);
             
             // Auto-select today's date
             const todayStr = today.toISOString().split('T')[0];
-            setTimeout(() => selectCourtDate(todayStr), 100);
+            setTimeout(() => {
+                console.log('Auto-selecting today:', todayStr);
+                selectCourtDate(todayStr);
+            }, 200);
         }
         
         function selectCourtDate(dateStr) {
+            console.log('Selecting date:', dateStr);
             selectedCourtDate = dateStr;
             
             document.querySelectorAll('.calendar-day').forEach(day => {
@@ -870,25 +883,39 @@
             const selectedDay = document.querySelector(`[data-date="${dateStr}"]`);
             if (selectedDay) {
                 selectedDay.classList.add('selected');
+                console.log('Date selected in calendar');
+            } else {
+                console.warn('Could not find calendar day element');
             }
             
             displayCourtAvailability(dateStr);
         }
         
         function displayCourtAvailability(dateStr) {
+            console.log('Displaying court availability for:', dateStr);
             const availability = document.getElementById('courtAvailability');
             const dateDisplay = document.getElementById('selectedDateDisplay');
             const tableBody = document.getElementById('courtSlotsTable');
             
+            if (!tableBody) {
+                console.error('Court slots table not found!');
+                return;
+            }
+            
             const date = new Date(dateStr + 'T00:00:00');
-            dateDisplay.textContent = date.toLocaleDateString('en-US', { 
+            const formattedDate = date.toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
             });
             
+            dateDisplay.textContent = formattedDate;
+            console.log('Formatted date:', formattedDate);
+            
             let html = '';
+            let slotCount = 0;
+            
             COURT_TIMES.forEach(time => {
                 html += `<tr class="border-t"><td class="p-4 font-semibold text-gray-700">${time}</td>`;
                 
@@ -899,19 +926,22 @@
                     
                     html += `
                         <td class="p-4">
-                            <div class="court-slot ${slotClass} p-3 rounded-lg text-center font-semibold cursor-pointer"
+                            <div class="court-slot ${slotClass} p-3 rounded-lg text-center font-semibold ${isBooked ? '' : 'cursor-pointer'}"
                                  ${clickHandler}>
                                 ${isBooked ? 'Booked' : 'Available'}
                             </div>
                         </td>
                     `;
+                    slotCount++;
                 });
                 
                 html += '</tr>';
             });
             
             tableBody.innerHTML = html;
+            console.log('Generated', slotCount, 'court slots for', COURT_TIMES.length, 'time slots');
             availability.classList.remove('hidden');
+            availability.style.display = 'block';
         }
         
         function openCourtBookingModal(date, time, court) {
